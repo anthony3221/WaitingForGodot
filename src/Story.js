@@ -8,8 +8,6 @@ import Button from "@material-ui/core/Button";
 import KeyboardArrowLeft from "@material-ui/icons/KeyboardArrowLeft";
 import KeyboardArrowRight from "@material-ui/icons/KeyboardArrowRight";
 import storySteps from "./StoryStep";
-import success from "./success.jpeg";
-import failure from "./failure.jpg";
 
 const steps = storySteps;
 
@@ -40,39 +38,114 @@ const styles = theme => ({
     marginTop: "80px"
   },
   restartBtn: {
-    marginLeft: "50%",
-    marginRight: "30%",
+    marginLeft: "45%",
+    marginRight: "45%",
     marginTop: "20px"
+  },
+  button: {
+    marginLeft: "45%",
+    marginTop: "20px",
+    marginRight: "45%"
+  },
+  content: {
+    marginLeft: "10%",
+    marginRight: "10%",
+    marginTop: "15px",
+    fontSize: 22,
+    fontFamily: "Quicksand"
   }
 });
 
-const winStep = {
-  label: "Yay! ",
-  imgPath: success,
-  content: "Congrats!! You decide to quit waiting, and actively do something! "
-};
-const loseStep = {
-  label: "Aww... ",
-  imgPath: failure,
-  content:
-    "Waiting for something to happen is not a good attitude. Go explore the world and achieve something!"
+const charPoses = {
+  exit: { opacity: 0, y: 20 },
+  enter: {
+    opacity: 1,
+    y: 0,
+    delay: ({ charIndex }) => charIndex * 30
+  }
 };
 
 class Story extends React.Component {
   state = {
-    currentStep: 0
+    currentStep: 0,
+    showChoice: false,
+    selectedYes: false,
+    nextDisabled: false
   };
 
-  handleNext = () => {
-    this.setState(prevState => ({
-      currentStep: prevState.currentStep + 1
-    }));
+  _handleNext = () => {
+    this.setState({
+      currentStep: this.state.currentStep + 1
+    });
+
+    if (this.state.currentStep === 5) {
+      this.setState({ showChoice: true, nextDisabled: true });
+    } else if (this.state.currentStep === steps.length - 3) {
+      this.setState({ currentStep: steps.length - 1, nextDisabled: true });
+    } else {
+      this.setState({ showChoice: false });
+    }
   };
 
   _onRestart = () => {
     this.setState({
-      currentStep: 0
+      currentStep: 0,
+      showChoice: false,
+      selectedYes: false,
+      nextDisabled: false
     });
+  };
+
+  _onSelectYes = () => {
+    this.setState({
+      selectedYes: false,
+      currentStep: this.state.currentStep + 1,
+      showChoice: false,
+      nextDisabled: false
+    });
+  };
+
+  _onSelectNo = () => {
+    this.setState({
+      selectedYes: true,
+      currentStep: steps.length - 2,
+      showChoice: false,
+      nextDisabled: true
+    });
+  };
+
+  _renderChoiceBtn = () => {
+    const { classes } = this.props;
+
+    if (this.state.showChoice) {
+      return (
+        <div>
+          <p style={{ marginLeft: "30%", width: 500, textAlign: "center", fontFamily: 'Quicksand' }}>
+            Do you still want to go back waiting for Godot?
+          </p>
+          <div className={classes.button}>
+            <Button
+              variant="contained"
+              color="primary"
+              style={{ marginRight: "10px", marginBottom: "10px" }}
+              onClick={this._onSelectYes}
+            >
+              Yes
+            </Button>
+            <Button
+              variant="contained"
+              color="secondary"
+              style={{ marginRight: "10px", marginBottom: "10px" }}
+              onClick={this._onSelectNo}
+            >
+              No
+            </Button>
+          </div>
+        </div>
+      );
+    } else {
+      return <div />;
+    }
   };
 
   render() {
@@ -83,13 +156,20 @@ class Story extends React.Component {
     return (
       <div className={classes.root}>
         <Paper square elevation={0} className={classes.header}>
-          <Typography>{steps[currentStep].label}</Typography>
+          <Typography style={{ fontSize: 26, fontFamily: "Quicksand" }}>
+            {steps[currentStep].label}
+          </Typography>
         </Paper>
         <img
           className={classes.img}
           src={steps[currentStep].imgPath}
           alt={steps[currentStep].label}
         />
+        <Typography className={classes.content}>
+          {steps[currentStep].content}
+        </Typography>
+
+        {this._renderChoiceBtn()}
         <MobileStepper
           steps={maxSteps}
           position="static"
@@ -98,8 +178,8 @@ class Story extends React.Component {
           nextButton={
             <Button
               size="small"
-              onClick={this.handleNext}
-              disabled={currentStep === maxSteps - 1}
+              onClick={this._handleNext}
+              disabled={currentStep === maxSteps - 1 || this.state.nextDisabled}
             >
               Next
               {theme.direction === "rtl" ? (
