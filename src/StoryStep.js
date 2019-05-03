@@ -83,7 +83,7 @@ const storySteps = [
       "Congrats!! You decide to quit waiting, and actively do something! "
   },
   {
-    label: "Aww... ",
+    label: "Hey there!! ",
     imgPath: failure,
     content:
       "Waiting for something to happen is not a good attitude. Go explore the world and achieve something!"
